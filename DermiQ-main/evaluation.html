@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DermiQ - Evaluate Your Skin</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Me</a></li>
+            </ul>
+            <h1 class="logo">DermiQ</h1>
+        </nav>
+    </header>
+    
+    <section class="evaluation">
+        <h2>Let's evaluate your skin !!</h2>
+        <form id="skinForm" enctype="multipart/form-data">
+            <input type="file" id="skinImage" accept="image/*" required>
+            <button type="button" onclick="submitForm()">EXAMINE</button>
+        </form>
+
+        <!-- Result display -->
+        <div id="result"></div>
+
+        <!-- Dos and Don'ts Section -->
+        <div class="dos-donts">
+            <div class="dos">
+                <h2>Dos</h2>
+                <ul>
+                    <li>Start with a Good Cleanser</li>
+                    <li>Invest in Quality Products</li>
+                    <li>Double Cleanse at night</li>
+                    <li>Consult your dermatologist</li>
+                    <li>Give your skin enough time</li>
+                </ul>
+            </div>
+            <div class="donts">
+                <h2>Don'ts</h2>
+                <ul>
+                    <li>Forget SPF</li>
+                    <li>Exfoliate every day</li>
+                    <li>Touch your face</li>
+                    <li>Excessively wash your face</li>
+                    <li>Expect results overnight</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        async function submitForm() {
+            const form = document.getElementById('skinForm');
+            const formData = new FormData(form);
+            const fileInput = document.getElementById('skinImage').files[0];
+            
+            if (!fileInput) {
+                alert("Please select an image first.");
+                return;
+            }
+
+            formData.append("file", fileInput);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/upload-image/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Check if the response is ok (status code 200-299)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log("Result from server:", result); // Log the response for debugging
+
+                if (result.prediction) {
+                    document.getElementById('result').innerHTML = "Prediction: " + result.prediction;
+                } else if (result.error) {
+                    document.getElementById('result').innerHTML = "Error: " + result.error;
+                } else {
+                    document.getElementById('result').innerHTML = "Unexpected response format.";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('result').innerHTML = "An error occurred. Please try again.";
+            }
+        }
+    </script>
+</body>
+</html>
